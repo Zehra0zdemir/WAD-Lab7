@@ -34,11 +34,19 @@ tasks.named('test') {
 }
 
 jacocoTestReport {
-	dependsOn test
+    dependsOn test // Ensures tests run before generating the report
+    
+    reports {
+        xml.required = false
+        csv.required = false
+        html.required = true // The HTML report required by the lab
+    }
 
-	reports {
-		html.required = true
-		xml.required = true
-		csv.required = false
-	}
+    // CRITICAL FIX: Explicitly restrict JaCoCo to instrument ONLY your application package
+    // This completely bypasses the incompatible Java 25 system classes (sun.util.*, etc.)
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it, include: 'com/upb/**')
+        }))
+    }
 }
