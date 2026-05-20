@@ -17,33 +17,28 @@ jobs:
       # Step 1: Check out the repository code
       - uses: actions/checkout@v4
 
-      # Step 2: Set up Java 21 (Temurin distribution) with Gradle caching
-      - uses: actions/setup-java@v4
+      # DÜZELTME 1: JaCoCo ile tam uyumlu çalışması için Java sürümünü 17'ye sabitledik
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: 21
+          java-version: 17
           cache: gradle
 
       # Step 3: Make the Gradle wrapper executable
       - name: Grant execute permission for Gradle Wrapper
         run: chmod +x gradlew
 
-      # Step 4: Build the project with Gradle
+      # DÜZELTME 2: -x test ekleyerek build esnasında testlerin erkenden hatasız patlamasını engelledik
       - name: Build with Gradle
-        run: ./gradlew build
+        run: ./gradlew build -x test
 
       # Requirement 1 & 2: Run all backend tests, injecting MY_SECRET_KEY from GitHub Secrets
-      # The environment() test in Lab7Test.java reads System.getenv("MY_SECRET_KEY")
-      # and expects the value "ABC" — set that secret in:
-      #   GitHub repo > Settings > Secrets and variables > Actions > New repository secret
-      #     Name:  MY_SECRET_KEY
-      #     Value: ABC
       - name: Run Backend Tests
         run: ./gradlew test
         env:
           MY_SECRET_KEY: ${{ secrets.MY_SECRET_KEY }}
 
       # Requirement 3: Generate the JaCoCo code-coverage report
-      # The report is written to build/reports/jacoco/test/html/index.html
       - name: Generate JaCoCo Coverage Report
         run: ./gradlew jacocoTestReport
