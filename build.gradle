@@ -9,9 +9,9 @@ group = 'com.upb'
 version = '0.0.1-SNAPSHOT'
 
 java {
-	toolchain {
-		languageVersion = JavaLanguageVersion.of(25)
-	}
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17) // 25 olan kısmı 17 yapıyoruz
+    }
 }
 
 repositories {
