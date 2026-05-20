@@ -1,29 +1,49 @@
 name: Lab 7
-#TODO The pipeline should be triggered only on push to a "test" branch
+
+# Requirement 4: Trigger the pipeline only on push or pull_request to the "test" branch
 on:
   push:
+    branches:
+      - test
   pull_request:
+    branches:
+      - test
 
 jobs:
   test:
     runs-on: ubuntu-latest
 
     steps:
+      # Step 1: Check out the repository code
       - uses: actions/checkout@v4
 
+      # Step 2: Set up Java 21 (Temurin distribution) with Gradle caching
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 21
           cache: gradle
 
+      # Step 3: Make the Gradle wrapper executable
       - name: Grant execute permission for Gradle Wrapper
         run: chmod +x gradlew
 
+      # Step 4: Build the project with Gradle
       - name: Build with Gradle
         run: ./gradlew build
-      # TODO: Run backend tests in the pipeline
 
-      # TODO: Run the Jacoco report in the pipeline (Jacoco already exists)
+      # Requirement 1 & 2: Run all backend tests, injecting MY_SECRET_KEY from GitHub Secrets
+      # The environment() test in Lab7Test.java reads System.getenv("MY_SECRET_KEY")
+      # and expects the value "ABC" — set that secret in:
+      #   GitHub repo > Settings > Secrets and variables > Actions > New repository secret
+      #     Name:  MY_SECRET_KEY
+      #     Value: ABC
+      - name: Run Backend Tests
+        run: ./gradlew test
+        env:
+          MY_SECRET_KEY: ${{ secrets.MY_SECRET_KEY }}
 
-      # TODO: Set GitHub secrets and read them in the pipeline (for the environmentTest)
+      # Requirement 3: Generate the JaCoCo code-coverage report
+      # The report is written to build/reports/jacoco/test/html/index.html
+      - name: Generate JaCoCo Coverage Report
+        run: ./gradlew jacocoTestReport
