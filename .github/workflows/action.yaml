@@ -1,6 +1,5 @@
 name: Lab 7
 
-# Requirement 4: Trigger the pipeline only on push or pull_request to the "test" branch
 on:
   push:
     branches:
@@ -14,31 +13,34 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Check out the repository code
       - uses: actions/checkout@v4
 
-      # Step 2: Force JDK 17 for JaCoCo compatibility
+      # 1. Java 17 ortamını kuruyoruz
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
-          distribution: temurin
-          java-version: 17
-          cache: gradle
+          distribution: "temurin"
+          java-version: "17"
+          cache: "gradle"
 
-      # Step 3: Make the Gradle wrapper executable
       - name: Grant execute permission for Gradle Wrapper
         run: chmod +x gradlew
 
-      # GÜNCELLEME: Önceden kalan uyumsuz Java 25 önbelleğini temizlemek için 'clean' ekledik
+      # 2. Derleme adımına JAVA_HOME yolunu açıkça gösteriyoruz
       - name: Build with Gradle
         run: ./gradlew clean build -x test
+        env:
+          JAVA_HOME: ${{ env.JAVA_HOME_17_X64 }}
 
-      # GÜNCELLEME: Test aşamasına da temiz bir başlangıç verdik
+      # 3. Test adımına JAVA_HOME ve Secret'ı aynı anda bağlıyoruz
       - name: Run Backend Tests
         run: ./gradlew test
         env:
           MY_SECRET_KEY: ${{ secrets.MY_SECRET_KEY }}
+          JAVA_HOME: ${{ env.JAVA_HOME_17_X64 }}
 
-      # Step 6: Generate the JaCoCo code-coverage report
+      # 4. Raporlama adımına da Java 17'yi dayatıyoruz
       - name: Generate JaCoCo Coverage Report
         run: ./gradlew jacocoTestReport
+        env:
+          JAVA_HOME: ${{ env.JAVA_HOME_17_X64 }}
